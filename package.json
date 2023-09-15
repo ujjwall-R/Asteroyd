@@ -1,0 +1,21 @@
+{
+  "scripts": {
+    "dev": "parcel index.html",
+    "build": "parcel build dist",
+    "test": "nyc ./node_modules/.bin/_mocha 'test/**/*.test.ts'",
+    "test:coverage": "nyc npm run test"
+  },
+  "devDependencies": {
+    "@types/mocha": "^10.0.1",
+    "mocha": "^10.2.0",
+    "parcel-bundler": "^1.12.5",
+    "ts-node": "^10.9.1"
+  },
+  "dependencies": {
+    "@testdeck/mocha": "^0.3.3",
+    "@types/chai": "^4.3.6",
+    "chai": "^4.3.8",
+    "nyc": "^15.1.0",
+    "ts-mockito": "^2.6.1"
+  }
+}
