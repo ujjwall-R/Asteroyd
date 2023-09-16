@@ -4,8 +4,11 @@ import { DB } from "../src/model/psql_db"; // Replace with the actual path to yo
 describe("DB", () => {
   let db: DB;
 
-  beforeEach(() => {
-    db = new DB();
+  it("should connect to the database", () => {
+    expect(async () => {
+      db = new DB();
+      await db.connect();
+    }).to.not.throw();
   });
 
   it("should save a snippet", () => {
@@ -41,5 +44,11 @@ describe("DB", () => {
     db.UpdateSnippet(snippetId, updatedSnippetText);
     const fetchedSnippet = db.FetchSnippet(snippetId);
     expect(fetchedSnippet).to.equal(updatedSnippetText);
+  });
+
+  it("should disconnect from the database", () => {
+    expect(async () => {
+      await db.disconnect();
+    }).to.not.throw();
   });
 });

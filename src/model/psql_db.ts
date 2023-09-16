@@ -1,7 +1,30 @@
+import { Client, Pool } from "pg";
+
 import { Snippet } from "./Snippet";
 
 export class DB {
-  public constructor() {}
+  private client: Client | undefined;
+  private pool: Pool;
+
+  public constructor() {
+    this.pool = new Pool({
+      user: "your_username",
+      host: "your_host",
+      database: "your_database",
+      password: "your_password",
+      port: 5432, // Default PostgreSQL port
+    });
+  }
+
+  async connect() {
+    try {
+    } catch (error) {}
+  }
+
+  async disconnect() {
+    try {
+    } catch (error) {}
+  }
 
   public SaveSnippet(text: string) {}
 
