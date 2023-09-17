@@ -1,19 +1,15 @@
-import { Client, Pool } from "pg";
+const sqlite3 = require("sqlite3").verbose();
 
+import { sqlite3 } from "sqlite3";
 import { Snippet } from "./Snippet";
 
 export class DB {
-  private client: Client | undefined;
-  private pool: Pool;
+  private db: sqlite3;
+  private db_name: string;
 
   public constructor() {
-    this.pool = new Pool({
-      user: "your_username",
-      host: "your_host",
-      database: "your_database",
-      password: "your_password",
-      port: 5432, // Default PostgreSQL port
-    });
+    this.db_name = "sippets.db";
+    this.db = new sqlite3.Database(this.db_name);
   }
 
   async connect() {
