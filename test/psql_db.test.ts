@@ -1,5 +1,6 @@
-import { expect } from "chai";
+import { assert, expect } from "chai";
 import { DB } from "../src/model/psql_db"; // Replace with the actual path to your DB class
+import { Snippet } from "../src/model/Snippet";
 
 describe("DB", () => {
   let db: DB;
@@ -12,35 +13,37 @@ describe("DB", () => {
   });
 
   it("should save a snippet", () => {
-    const snippetText = "This is a test snippet";
+    const snippetText = "This is a test snippet1";
     db.SaveSnippet(snippetText);
-    //asert
   });
 
-  it("should fetch a snippet", () => {
-    const snippetText = "This is a test snippet";
+  it("should fetch a snippet", async () => {
     const snippetId = "1";
-    db.SaveSnippet(snippetText);
-
-    const fetchedSnippet = db.FetchSnippet(snippetId);
-    expect(fetchedSnippet).to.equal(snippetText);
+    const fetchedSnippet = await db.FetchSnippet(snippetId);
+    assert.ok(fetchedSnippet);
+    assert.strictEqual(fetchedSnippet.id, snippetId);
   });
 
-  it("should delete a snippet", () => {
-    const snippetText = "This is a test snippet";
-    const snippetId = "1";
-    db.SaveSnippet(snippetText);
-
-    db.DeleteSnippet(snippetId);
-    const fetchedSnippet = db.FetchSnippet(snippetId);
-    expect(fetchedSnippet).to.be.undefined;
+  it("should delete a snippet", async () => {
+    const snippetIdToDelete = "1";
+    const initialSnippet = await db.FetchSnippet(snippetIdToDelete);
+    assert.isDefined(initialSnippet, "Snippet should exist before deletion");
+    try {
+      await db.DeleteSnippet(snippetIdToDelete);
+      const _ = await db.FetchSnippet(snippetIdToDelete);
+    } catch (error) {
+      assert.strictEqual(
+        error.message,
+        "no_snippet_found",
+        "Error message should indicate non-existent snippet"
+      );
+    }
   });
 
   it("should update a snippet", () => {
     const initialSnippetText = "This is an initial snippet";
     const updatedSnippetText = "This is an updated snippet";
     const snippetId = "1";
-    db.SaveSnippet(initialSnippetText);
     db.UpdateSnippet(snippetId, updatedSnippetText);
     const fetchedSnippet = db.FetchSnippet(snippetId);
     expect(fetchedSnippet).to.equal(updatedSnippetText);

@@ -1,35 +1,98 @@
-const sqlite3 = require("sqlite3").verbose();
+const sqlite3 = require("sqlite3");
+import { open } from "sqlite";
 
 import { sqlite3 } from "sqlite3";
 import { Snippet } from "./Snippet";
 
 export class DB {
-  private db: sqlite3;
+  private db;
   private db_name: string;
 
   public constructor() {
-    this.db_name = "sippets.db";
+    this.db_name = "snippets.db";
     this.db = new sqlite3.Database(this.db_name);
+    this.createTable();
   }
 
   async connect() {
     try {
+      await this.db.connect();
     } catch (error) {}
   }
 
   async disconnect() {
     try {
+      await this.db.close();
     } catch (error) {}
   }
 
-  public SaveSnippet(text: string) {}
-
-  public FetchSnippet(snippet_id: string): Snippet {
-    const snip: Snippet = { id: "", code: "" };
-    return snip;
+  private async createTable() {
+    const createTableSQL = `
+      CREATE TABLE IF NOT EXISTS snippets (
+        id INTEGER PRIMARY KEY,
+        code TEXT
+      )
+    `;
+    try {
+      await this.db.exec(createTableSQL);
+    } catch (error) {
+      throw error;
+    }
   }
 
-  public DeleteSnippet(snippet_id: string) {}
+  public SaveSnippet(text: string): Promise<void> {
+    const insertSQL = "INSERT INTO snippets (code) VALUES (?)";
+    return new Promise<void>((resolve, reject) => {
+      this.db.run(insertSQL, [text], (err) => {
+        if (err) {
+          reject(err);
+        } else {
+          resolve();
+        }
+      });
+    });
+  }
+
+  public async FetchSnippet(snippet_id: string): Promise<Snippet> {
+    const selectSQL = "SELECT * FROM snippets WHERE id = ?";
+    try {
+      const row = await new Promise<Snippet>((resolve, reject) => {
+        this.db.get(selectSQL, [snippet_id], (err, row) => {
+          if (err) {
+            reject(err);
+          } else {
+            resolve(row);
+          }
+        });
+      });
+
+      if (row) {
+        const snippet: Snippet = { id: row.id.toString(), code: row.code };
+        return snippet;
+      } else {
+        throw new Error("no_snippet_found"); // Throw an error if no snippet is found
+      }
+    } catch (err) {
+      throw err;
+    }
+  }
+  public async DeleteSnippet(snippet_id: string): Promise<void> {
+    const deleteSQL = "DELETE FROM snippets WHERE id = ?";
+
+    try {
+      await new Promise<void>((resolve, reject) => {
+        this.db.run(deleteSQL, [snippet_id], (err) => {
+          if (err) {
+            reject(err);
+          } else {
+            resolve();
+          }
+        });
+      });
+    } catch (error) {
+      throw new Error("snippet_deletion_error");
+    }
+  }
 
   public UpdateSnippet(snippet_id: string, updated_snippet: string) {}
 }
