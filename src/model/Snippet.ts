@@ -1,4 +1,4 @@
 export type Snippet = {
-  id: string;
-  code: string;
+  id: String;
+  code: String;
 };

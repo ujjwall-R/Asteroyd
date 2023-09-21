@@ -1,12 +1,11 @@
 const sqlite3 = require("sqlite3");
-import { open } from "sqlite";
 
 import { sqlite3 } from "sqlite3";
 import { Snippet } from "./Snippet";
 
 export class DB {
-  private db;
-  private db_name: string;
+  protected db;
+  private db_name: String;
 
   public constructor() {
     this.db_name = "snippets.db";
@@ -40,7 +39,7 @@ export class DB {
     }
   }
 
-  public SaveSnippet(text: string): Promise<void> {
+  public SaveSnippet(text: String): Promise<void> {
     const insertSQL = "INSERT INTO snippets (code) VALUES (?)";
     return new Promise<void>((resolve, reject) => {
       this.db.run(insertSQL, [text], (err) => {
@@ -53,7 +52,7 @@ export class DB {
     });
   }
 
-  public async FetchSnippet(snippet_id: string): Promise<Snippet> {
+  public async FetchSnippet(snippet_id: String): Promise<Snippet> {
     const selectSQL = "SELECT * FROM snippets WHERE id = ?";
     try {
       const row = await new Promise<Snippet>((resolve, reject) => {
@@ -76,7 +75,7 @@ export class DB {
       throw err;
     }
   }
-  public async DeleteSnippet(snippet_id: string): Promise<void> {
+  public async DeleteSnippet(snippet_id: String): Promise<void> {
     const deleteSQL = "DELETE FROM snippets WHERE id = ?";
 
     try {
@@ -94,5 +93,21 @@ export class DB {
     }
   }
 
-  public UpdateSnippet(snippet_id: string, updated_snippet: string) {}
+  public async UpdateSnippet(snippet: Snippet): Promise<void> {
+    const updateSQL = "UPDATE snippets SET code = ? WHERE id = ?";
+    const { id, code } = snippet;
+    try {
+      await new Promise<void>((resolve, reject) => {
+        this.db.run(updateSQL, [code, id], (err) => {
+          if (err) {
+            reject(err);
+          } else {
+            resolve();
+          }
+        });
+      });
+    } catch (error) {
+      throw new Error("snippet_updation_error");
+    }
+  }
 }

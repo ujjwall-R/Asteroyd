@@ -1,57 +1,108 @@
 import { assert, expect } from "chai";
-import { DB } from "../src/model/psql_db"; // Replace with the actual path to your DB class
+import { DB } from "../src/model/psql_db";
 import { Snippet } from "../src/model/Snippet";
 
-describe("DB", () => {
-  let db: DB;
+class DBTest extends DB {
+  constructor() {
+    super();
+  }
 
-  it("should connect to the database", () => {
-    expect(async () => {
-      db = new DB();
-      await db.connect();
-    }).to.not.throw();
-  });
+  async connectToDatabase() {
+    it("should connect to the database", async () => {
+      expect(async () => {
+        await this.connect();
+      }).to.not.throw();
+    });
+  }
 
-  it("should save a snippet", () => {
-    const snippetText = "This is a test snippet1";
-    db.SaveSnippet(snippetText);
-  });
+  async saveSnippet() {
+    it("should save a snippet", async () => {
+      const snippetText = "This is a test snippet1";
+      await expect(async () => {
+        this.SaveSnippet(snippetText);
+      }).to.not.throw();
+    });
+  }
 
-  it("should fetch a snippet", async () => {
-    const snippetId = "1";
-    const fetchedSnippet = await db.FetchSnippet(snippetId);
-    assert.ok(fetchedSnippet);
-    assert.strictEqual(fetchedSnippet.id, snippetId);
-  });
+  async fetchSnippet() {
+    it("should fetch a snippet", async () => {
+      const snippetId: String = await this.getMaximumIdOfSnippet();
+      const fetchedSnippet: Snippet = await this.FetchSnippet(snippetId);
+      assert.ok(fetchedSnippet);
+      assert.strictEqual(fetchedSnippet.id.toString(), snippetId.toString());
+    });
+  }
 
-  it("should delete a snippet", async () => {
-    const snippetIdToDelete = "1";
-    const initialSnippet = await db.FetchSnippet(snippetIdToDelete);
-    assert.isDefined(initialSnippet, "Snippet should exist before deletion");
+  async deleteSnippet() {
+    it("should delete a snippet", async () => {
+      const snippetIdToDelete: String = await this.getMaximumIdOfSnippet();
+      const initialSnippet = await this.FetchSnippet(snippetIdToDelete);
+      assert.isDefined(initialSnippet, "Snippet should exist before deletion");
+      try {
+        await this.DeleteSnippet(snippetIdToDelete);
+        const _ = await this.FetchSnippet(snippetIdToDelete);
+      } catch (error) {
+        assert.strictEqual(
+          error.message,
+          "no_snippet_found",
+          "Error message should indicate non-existent snippet"
+        );
+      }
+    });
+  }
+
+  async updateSnippet() {
+    it("should update a snippet", async () => {
+      const snippetId: String = await this.getMaximumIdOfSnippet();
+      const updatedSnippetText: String = "This is an updated snippet";
+      const snippet: Snippet = { id: snippetId, code: updatedSnippetText };
+      await this.UpdateSnippet(snippet);
+      const fetchedSnippet = await this.FetchSnippet(snippetId);
+      expect(fetchedSnippet.code).to.equal(updatedSnippetText);
+    });
+  }
+
+  async disconnectFromDatabase() {
+    it("should disconnect from the database", async () => {
+      await expect(async () => {
+        await this.disconnect();
+      }).to.not.throw();
+    });
+  }
+
+  async getMaximumIdOfSnippet(): Promise<String> {
+    const selectMaxIdSQL = "SELECT MAX(id) as id FROM snippets";
+
     try {
-      await db.DeleteSnippet(snippetIdToDelete);
-      const _ = await db.FetchSnippet(snippetIdToDelete);
-    } catch (error) {
-      assert.strictEqual(
-        error.message,
-        "no_snippet_found",
-        "Error message should indicate non-existent snippet"
-      );
+      const row = await new Promise<Snippet>((resolve, reject) => {
+        this.db.get(selectMaxIdSQL, (err, row) => {
+          if (err) {
+            reject(err);
+          } else {
+            resolve(row);
+          }
+        });
+      });
+
+      if (row) {
+        const max_id: String = row.id;
+        return max_id;
+      } else {
+        throw new Error("no_snippet_found"); // Throw an error if no snippet is found
+      }
+    } catch (err) {
+      throw err;
     }
-  });
+  }
+}
 
-  it("should update a snippet", () => {
-    const initialSnippetText = "This is an initial snippet";
-    const updatedSnippetText = "This is an updated snippet";
-    const snippetId = "1";
-    db.UpdateSnippet(snippetId, updatedSnippetText);
-    const fetchedSnippet = db.FetchSnippet(snippetId);
-    expect(fetchedSnippet).to.equal(updatedSnippetText);
-  });
+describe("DB", () => {
+  const dbTest = new DBTest();
 
-  it("should disconnect from the database", () => {
-    expect(async () => {
-      await db.disconnect();
-    }).to.not.throw();
-  });
+  dbTest.connectToDatabase();
+  dbTest.saveSnippet();
+  dbTest.fetchSnippet();
+  dbTest.deleteSnippet();
+  dbTest.updateSnippet();
+  dbTest.disconnectFromDatabase();
 });
