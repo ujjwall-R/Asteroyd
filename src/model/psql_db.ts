@@ -42,7 +42,7 @@ export class DB {
   public SaveSnippet(text: String): Promise<void> {
     const insertSQL = "INSERT INTO snippets (code) VALUES (?)";
     return new Promise<void>((resolve, reject) => {
-      this.db.run(insertSQL, [text], (err) => {
+      this.db.run(insertSQL, [text], (err: Error | null) => {
         if (err) {
           reject(err);
         } else {
@@ -56,13 +56,17 @@ export class DB {
     const selectSQL = "SELECT * FROM snippets WHERE id = ?";
     try {
       const row = await new Promise<Snippet>((resolve, reject) => {
-        this.db.get(selectSQL, [snippet_id], (err, row) => {
-          if (err) {
-            reject(err);
-          } else {
-            resolve(row);
+        this.db.get(
+          selectSQL,
+          [snippet_id],
+          (err: Error | null, row: Snippet) => {
+            if (err) {
+              reject(err);
+            } else {
+              resolve(row);
+            }
           }
-        });
+        );
       });
 
       if (row) {
@@ -80,7 +84,7 @@ export class DB {
 
     try {
       await new Promise<void>((resolve, reject) => {
-        this.db.run(deleteSQL, [snippet_id], (err) => {
+        this.db.run(deleteSQL, [snippet_id], (err: Error | null) => {
           if (err) {
             reject(err);
           } else {
@@ -98,7 +102,7 @@ export class DB {
     const { id, code } = snippet;
     try {
       await new Promise<void>((resolve, reject) => {
-        this.db.run(updateSQL, [code, id], (err) => {
+        this.db.run(updateSQL, [code, id], (err: Error | null) => {
           if (err) {
             reject(err);
           } else {

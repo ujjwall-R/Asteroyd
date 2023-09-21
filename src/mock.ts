@@ -1,3 +1,3 @@
-export const mockFunction=():boolean=>{
-    return true;
-}
+export const mockFunction = (): boolean => {
+  return true;
+};

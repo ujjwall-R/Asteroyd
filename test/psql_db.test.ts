@@ -41,12 +41,13 @@ class DBTest extends DB {
       try {
         await this.DeleteSnippet(snippetIdToDelete);
         const _ = await this.FetchSnippet(snippetIdToDelete);
-      } catch (error) {
-        assert.strictEqual(
-          error.message,
-          "no_snippet_found",
-          "Error message should indicate non-existent snippet"
-        );
+      } catch (error: unknown) {
+        if (error instanceof Error)
+          assert.strictEqual(
+            error.message,
+            "no_snippet_found",
+            "Error message should indicate non-existent snippet"
+          );
       }
     });
   }
@@ -75,7 +76,7 @@ class DBTest extends DB {
 
     try {
       const row = await new Promise<Snippet>((resolve, reject) => {
-        this.db.get(selectMaxIdSQL, (err, row) => {
+        this.db.get(selectMaxIdSQL, (err: Error | null, row: Snippet) => {
           if (err) {
             reject(err);
           } else {
