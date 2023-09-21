@@ -85,8 +85,8 @@ class DBTest extends DB {
       });
 
       if (row) {
-        const max_id: String = row.id;
-        return max_id;
+        const maxId: String = row.id;
+        return maxId;
       } else {
         throw new Error("no_snippet_found"); // Throw an error if no snippet is found
       }
