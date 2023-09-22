@@ -3,7 +3,16 @@ const sqlite3 = require("sqlite3");
 import { sqlite3 } from "sqlite3";
 import { Snippet } from "./Snippet";
 
-export class DB {
+export interface DBInterface {
+  connect(): Promise<void>;
+  disconnect(): Promise<void>;
+  SaveSnippet(text: string): Promise<void>;
+  FetchSnippet(snippet_id: string): Promise<Snippet>;
+  DeleteSnippet(snippet_id: string): Promise<void>;
+  UpdateSnippet(snippet: Snippet): Promise<void>;
+}
+
+export class DB implements DBInterface {
   protected db;
   private db_name: String;
 
