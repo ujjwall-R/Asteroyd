@@ -15,11 +15,22 @@ class DBTest extends DB {
     });
   }
 
+  async saveSnippetTenTimes() {
+    it("should save a snippet 10 times", async () => {
+      const snippetText = "This is a test snippet1";
+      let cnt: number = 10;
+      while (cnt--)
+        await expect(async () => {
+          await this.SaveSnippet(snippetText);
+        }).to.not.throw();
+    });
+  }
+
   async saveSnippet() {
     it("should save a snippet", async () => {
       const snippetText = "This is a test snippet1";
       await expect(async () => {
-        this.SaveSnippet(snippetText);
+        await this.SaveSnippet(snippetText);
       }).to.not.throw();
     });
   }
@@ -97,13 +108,13 @@ class DBTest extends DB {
   }
 }
 
-describe("DB", () => {
-  const dbTest = new DBTest();
+describe("DB", async () => {
+  const dbTest = await new DBTest();
 
-  dbTest.connectToDatabase();
-  dbTest.saveSnippet();
-  dbTest.fetchSnippet();
-  dbTest.deleteSnippet();
-  dbTest.updateSnippet();
-  dbTest.disconnectFromDatabase();
+  await dbTest.connectToDatabase();
+  await dbTest.saveSnippetTenTimes();
+  await dbTest.fetchSnippet();
+  await dbTest.deleteSnippet();
+  await dbTest.updateSnippet();
+  await dbTest.disconnectFromDatabase();
 });
