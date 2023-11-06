@@ -1,8 +1,8 @@
 import { assert, expect } from "chai";
-import { DB } from "../src/model/psql_db";
+import { DB, DBInterface } from "../src/model/psql_db";
 import { Snippet } from "../src/model/Snippet";
 
-class DBTest extends DB {
+class DBTest extends DB implements DBInterface {
   constructor() {
     super();
   }
