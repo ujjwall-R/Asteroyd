@@ -4,3 +4,4 @@ node_modules
 package-lock.json
 database
 snippets.db
+.vs_code
